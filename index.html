@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務報告ツール</title>
+<style>
+body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#fafaf7;color:#1a1a1a;line-height:1.6}
+.tab-bar{display:flex;gap:4px;border-bottom:1px solid #e0e0d8;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{padding:10px 16px;font-size:14px;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;color:#666}
+.tab-btn.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
+.panel{display:none}
+.panel.active{display:block}
+.section{background:#f0eee5;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.section h3{font-size:14px;font-weight:500;margin:0 0 10px}
+.row{display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:8px;align-items:center}
+.subline{display:grid;grid-template-columns:1fr 56px;gap:6px;margin:4px 0 4px 12px}
+.label{font-size:12px;color:#666}
+.goal-bar{background:#fff;border:1px solid #e0e0d8;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.progress-track{height:8px;background:#f0eee5;border-radius:4px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:#185fa5;transition:width .3s}
+.report-out{background:#f0eee5;border-radius:8px;padding:14px;font-family:"SF Mono","Consolas",monospace;font-size:13px;line-height:1.7;white-space:pre-wrap;border:1px solid #e0e0d8}
+input[type="text"],input[type="number"],textarea{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #e0e0d8;border-radius:6px;font-size:13px;font-family:inherit;background:#fff}
+textarea{min-height:60px;resize:vertical}
+button{padding:10px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+button:hover{opacity:0.9}
+button.secondary{background:#fff;color:#1a1a1a;border:1px solid #e0e0d8}
+.row-with-del{display:grid;grid-template-columns:1fr 90px 1.2fr 32px;gap:8px;align-items:center;margin-bottom:8px}
+.row-with-del-tmr{display:grid;grid-template-columns:60px 1fr 90px 1.3fr 32px;gap:6px;align-items:center;margin-bottom:8px}
+.head-row{display:grid;grid-template-columns:1fr 90px 1.2fr 32px;gap:8px;margin-bottom:4px;font-size:11px;color:#999}
+.head-row-tmr{display:grid;grid-template-columns:60px 1fr 90px 1.3fr 32px;gap:6px;margin-bottom:4px;font-size:11px;color:#999}
+.add-btn{width:100%;background:#fff;color:#666;border:1px dashed #c0c0b8;padding:12px;margin-top:4px}
+.del-btn{padding:6px 10px;background:#fff;color:#999;border:1px solid #e0e0d8;font-size:14px}
+.action-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+h1{font-size:22px;margin:0 0 8px}
+.date-badge{display:inline-block;background:#1a1a1a;color:#fff;padding:4px 12px;border-radius:14px;font-size:13px;margin-left:8px;vertical-align:middle}
+.hint{font-size:11px;color:#999;margin:8px 0 0}
+.copy-success{background:#0c447c !important}
+</style>
+</head>
+<body>
+<h1>業務報告ツール<span class="date-badge" id="today-date"></span></h1>
+<p class="hint">入力はブラウザに自動保存されます。同じURLで再アクセスすると続きから入力できます。</p>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="today">本日の面談</button>
+  <button class="tab-btn" data-tab="tomorrow">明日の予定</button>
+  <button class="tab-btn" data-tab="stats">進捗・実績</button>
+  <button class="tab-btn" data-tab="report">報告書出力</button>
+</div>
+
+<div class="panel active" id="panel-today">
+  <div class="goal-bar">
+    <div><div class="label">月間目標</div><div style="font-weight:500">内定承諾 17件</div></div>
+  </div>
+  <div class="head-row"><div>名前</div><div>所在地</div><div>結果</div><div></div></div>
+  <div id="today-list"></div>
+  <button class="add-btn" onclick="addToday()">+ 面談を追加</button>
+  <p class="hint">※時間は内部保持のみ。出力には含めません。</p>
+</div>
+
+<div class="panel" id="panel-tomorrow">
+  <div class="head-row-tmr"><div>時間</div><div>名前(ラベル)</div><div>所在地</div><div>懸念と対策</div><div></div></div>
+  <div id="tomorrow-list"></div>
+  <button class="add-btn" onclick="addTomorrow()">+ 予定を追加</button>
+</div>
+
+<div class="panel" id="panel-stats">
+  <div class="section">
+    <h3>今月の進捗</h3>
+    <div class="row"><span class="label">内定承諾数 / 17</span><input type="number" id="s_naitei" value="0" min="0"></div>
+    <div class="subline"><span class="label">└ 媒体</span><input type="number" id="s_naitei_baitai" value="0"></div>
+    <div class="subline"><span class="label">└ その他</span><input type="number" id="s_naitei_other" value="0"></div>
+    <div class="row" style="margin-top:10px"><span class="label">入社決定数</span><input type="number" id="s_nyusha" value="0"></div>
+    <div class="subline"><span class="label">└ 媒体</span><input type="number" id="s_nyusha_baitai" value="0"></div>
+    <div class="subline"><span class="label">└ その他</span><input type="number" id="s_nyusha_other" value="0"></div>
+    <div class="subline"><span class="label">└ 案件そのまま</span><input type="number" id="s_nyusha_same" value="0"></div>
+    <div class="row" style="margin-top:10px"><span class="label">会食数</span><input type="number" id="s_kaishoku" value="0"></div>
+    <div class="row"><span class="label">リファラル面談数</span><input type="number" id="s_refa" value="0"></div>
+    <div class="progress-track" style="margin-top:12px"><div class="progress-fill" id="goal-fill" style="width:0%"></div></div>
+  </div>
+  <div class="section">
+    <h3>本日の実績</h3>
+    <div class="row"><span class="label">面談数</span><input type="number" id="d_mendan" value="0"></div>
+    <div class="row"><span class="label">リファ案内数</span><input type="number" id="d_refa_annai" value="0"></div>
+    <div class="row"><span class="label">リファ面談設定数</span><input type="number" id="d_refa_set" value="0"></div>
+    <div class="row"><span class="label">リファ面談実施数</span><input type="number" id="d_refa_done" value="0"></div>
+    <div class="row"><span class="label">その他</span><input type="text" id="d_other" placeholder="任意"></div>
+  </div>
+  <div class="section">
+    <h3>その他(報告書末尾)</h3>
+    <textarea id="s_other_section" placeholder="共有事項・所感など"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-report">
+  <div class="action-row" style="margin-bottom:12px">
+    <button onclick="buildReport()">報告書を生成</button>
+    <button class="secondary" id="copy-btn" onclick="copyReport()">コピー</button>
+  </div>
+  <div class="report-out" id="report-out">「報告書を生成」を押してください。</div>
+</div>
+
+<script>
+const GOAL = 17;
+const DATE_STR = "2026-05-14";
+const PRESET_TODAY = [
+  { time: "15:00", name: "川原様(ミカタ)", location: "", result: "" },
+  { time: "17:00", name: "荒木克也さん(ヒアリング)", location: "", result: "" },
+  { time: "18:00", name: "熊田拓也さん(ヒアリング)", location: "", result: "" },
+  { time: "19:00", name: "新藤優希さん(ミカタ)", location: "", result: "" },
+  { time: "20:00", name: "中田慶韻さん(ヒアリング)", location: "", result: "" }
+];
+const PRESET_TOMORROW = [
+  { time: "18:00", name: "島田直人さん(ヒアリング)", location: "", concern: "" }
+];
+const STORAGE_KEY = 'biz_report_' + DATE_STR;
+let state = { today: JSON.parse(JSON.stringify(PRESET_TODAY)), tomorrow: JSON.parse(JSON.stringify(PRESET_TOMORROW)), stats: {} };
+try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if(s) state = {...state, ...s}; } catch(e) {}
+document.getElementById('today-date').textContent = DATE_STR;
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'report') buildReport();
+  });
+});
+function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderToday() {
+  const list = document.getElementById('today-list');
+  list.innerHTML = '';
+  state.today.forEach((it, i) => {
+    const div = document.createElement('div');
+    div.className = 'row-with-del';
+    div.innerHTML = '<input type="text" value="' + escapeHtml(it.name) + '" data-i="' + i + '" data-f="name" placeholder="名前"><input type="text" value="' + escapeHtml(it.location||'') + '" data-i="' + i + '" data-f="location" placeholder="所在地"><input type="text" value="' + escapeHtml(it.result||'') + '" data-i="' + i + '" data-f="result" placeholder="結果"><button class="del-btn" data-del="' + i + '">×</button>';
+    list.appendChild(div);
+  });
+  list.querySelectorAll('input').forEach(inp => inp.addEventListener('input', e => { state.today[+e.target.dataset.i][e.target.dataset.f] = e.target.value; save(); }));
+  list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { state.today.splice(+e.currentTarget.dataset.del, 1); save(); renderToday(); }));
+}
+function addToday() { state.today.push({name:'', location:'', result:''}); save(); renderToday(); }
+function renderTomorrow() {
+  const list = document.getElementById('tomorrow-list');
+  list.innerHTML = '';
+  state.tomorrow.forEach((it, i) => {
+    const div = document.createElement('div');
+    div.className = 'row-with-del-tmr';
+    div.innerHTML = '<input type="text" value="' + escapeHtml(it.time) + '" data-i="' + i + '" data-f="time" placeholder="HH:MM"><input type="text" value="' + escapeHtml(it.name) + '" data-i="' + i + '" data-f="name" placeholder="名前"><input type="text" value="' + escapeHtml(it.location||'') + '" data-i="' + i + '" data-f="location" placeholder="所在地"><textarea data-i="' + i + '" data-f="concern" placeholder="懸念と対策">' + escapeHtml(it.concern||'') + '</textarea><button class="del-btn" data-del="' + i + '">×</button>';
+    list.appendChild(div);
+  });
+  list.querySelectorAll('input,textarea').forEach(inp => inp.addEventListener('input', e => { state.tomorrow[+e.target.dataset.i][e.target.dataset.f] = e.target.value; save(); }));
+  list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { state.tomorrow.splice(+e.currentTarget.dataset.del, 1); save(); renderTomorrow(); }));
+}
+function addTomorrow() { state.tomorrow.push({time:'', name:'', location:'', concern:''}); save(); renderTomorrow(); }
+const STAT_IDS = ['s_naitei','s_naitei_baitai','s_naitei_other','s_nyusha','s_nyusha_baitai','s_nyusha_other','s_nyusha_same','s_kaishoku','s_refa','d_mendan','d_refa_annai','d_refa_set','d_refa_done','d_other','s_other_section'];
+function loadStats() {
+  STAT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(state.stats[id] != null) el.value = state.stats[id];
+    el.addEventListener('input', () => { state.stats[id] = el.value; save(); updateGoal(); });
+  });
+  updateGoal();
+}
+function updateGoal() {
+  const v = +(document.getElementById('s_naitei').value || 0);
+  document.getElementById('goal-fill').style.width = Math.min(100, Math.round(v / GOAL * 100)) + '%';
+}
+function v(id) { return document.getElementById(id).value || '0'; }
+function vt(id) { return document.getElementById(id).value || ''; }
+function nameWithLoc(it) { const loc = (it.location||'').trim(); return loc ? it.name + '(' + loc + ')' : it.name; }
+function buildReport() {
+  const lines = [];
+  lines.push('【ミカタ】');
+  lines.push('');
+  lines.push('【今月の進捗】');
+  lines.push('・内定承諾数:' + v('s_naitei') + ' / ' + GOAL + '(媒体' + v('s_naitei_baitai') + '・その他' + v('s_naitei_other') + ')');
+  lines.push('・入社決定数:' + v('s_nyusha') + '(媒体' + v('s_nyusha_baitai') + '・その他' + v('s_nyusha_other') + '・案件そのまま' + v('s_nyusha_same') + ')');
+  lines.push('・会食数:' + v('s_kaishoku'));
+  lines.push('・リファラル面談数:' + v('s_refa'));
+  lines.push('');
+  lines.push('【本日の実績】');
+  lines.push('・面談数:' + v('d_mendan'));
+  lines.push('・リファ案内数:' + v('d_refa_annai'));
+  lines.push('・リファ面談設定数:' + v('d_refa_set'));
+  lines.push('・リファ面談実施数:' + v('d_refa_done'));
+  if(vt('d_other').trim()) lines.push('・その他:' + vt('d_other'));
+  lines.push('');
+  lines.push('【面談結果報告】');
+  if(state.today.length === 0) { lines.push('・(面談なし)'); }
+  else { state.today.forEach(it => { if(it.name) lines.push('・' + nameWithLoc(it) + ':' + (it.result || '—')); }); }
+  lines.push('');
+  lines.push('【その他】');
+  const ot = vt('s_other_section').trim();
+  if(ot) ot.split('\n').forEach(l => { const t = l.trim(); if(t) lines.push(t.startsWith('・') ? t : '・' + t); });
+  else lines.push('・特になし');
+  lines.push('');
+  lines.push('【明日の面談予定】');
+  if(state.tomorrow.length === 0) { lines.push('・(予定なし)'); }
+  else { state.tomorrow.forEach(it => { if(it.name) { const t = it.time ? it.time + ' ' : ''; let l = '・' + t + nameWithLoc(it); if(it.concern && it.concern.trim()) l += '\n   懸念と対策:' + it.concern.trim(); lines.push(l); } }); }
+  document.getElementById('report-out').textContent = lines.join('\n');
+}
+function copyReport() {
+  const txt = document.getElementById('report-out').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    const old = btn.textContent;
+    btn.textContent = '✓ コピーしました';
+    setTimeout(() => { btn.textContent = old; }, 1500);
+  });
+}
+renderToday();
+renderTomorrow();
+loadStats();
+</script>
+</body>
+</html>
