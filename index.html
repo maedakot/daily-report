@@ -203,12 +203,30 @@ function buildReport() {
 }
 function copyReport() {
   const txt = document.getElementById('report-out').textContent;
-  navigator.clipboard.writeText(txt).then(() => {
-    const btn = document.getElementById('copy-btn');
-    const old = btn.textContent;
-    btn.textContent = '✓ コピーしました';
-    setTimeout(() => { btn.textContent = old; }, 1500);
-  });
+  const btn = document.getElementById('copy-btn');
+  if(!btn.dataset.label) btn.dataset.label = btn.textContent;
+  const done = ok => {
+    btn.textContent = ok ? '✓ コピーしました' : 'コピー不可 — テキストを選択してください';
+    setTimeout(() => { btn.textContent = btn.dataset.label; }, ok ? 1500 : 2500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => done(true), () => done(fallbackCopy(txt)));
+  } else {
+    done(fallbackCopy(txt));
+  }
+}
+function fallbackCopy(txt) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch(e) { return false; }
 }
 renderToday();
 renderTomorrow();
