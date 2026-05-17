@@ -1,0 +1,19 @@
+{
+  "name": "weekly-schedule",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "setup-auth": "ts-node scripts/setup-auth.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "googleapis": "^144.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  }
+}
