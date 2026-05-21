@@ -103,19 +103,9 @@ h1{font-size:22px;margin:0 0 8px}
 
 <script>
 const GOAL = 17;
-const DATE_STR = "2026-05-20";
-const PRESET_TODAY = [
-  { time: "14:00", name: "Tan Hiroshiさん(ミカタ)", location: "オンライン", result: "" },
-  { time: "18:00", name: "小畠 由依さん(ミカタ)", location: "オンライン", result: "" },
-  { time: "19:30", name: "堀脇様", location: "", result: "" }
-];
-const PRESET_TOMORROW = [
-  { time: "10:00", name: "太田　茂さん(ミカタ)", location: "オンライン", concern: "" },
-  { time: "12:00", name: "遠藤　勇斗さん(ミカタ)", location: "オンライン", concern: "" },
-  { time: "14:00", name: "ブイ　テェアンさん(ミカタ)", location: "オンライン", concern: "" },
-  { time: "15:00", name: "高橋音羽様", location: "", concern: "" },
-  { time: "18:30", name: "小松 寛紀さま", location: "", concern: "" }
-];
+const DATE_STR = "2026-05-21";
+const PRESET_TODAY = [];
+const PRESET_TOMORROW = [];
 const STORAGE_KEY = 'biz_report_' + DATE_STR;
 let state = { today: JSON.parse(JSON.stringify(PRESET_TODAY)), tomorrow: JSON.parse(JSON.stringify(PRESET_TOMORROW)), stats: {} };
 try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if(s) state = {...state, ...s}; } catch(e) {}
