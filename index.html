@@ -103,9 +103,20 @@ h1{font-size:22px;margin:0 0 8px}
 
 <script>
 const GOAL = 17;
-const DATE_STR = "2026-05-21";
-const PRESET_TODAY = [];
-const PRESET_TOMORROW = [];
+const DATE_STR = "2026-05-22";
+const PRESET_TODAY = [
+  { time: "13:00", name: "フジサキさん(ヒアリング)", location: "", result: "" },
+  { time: "15:00", name: "室川様", location: "", result: "" },
+  { time: "18:00", name: "小川弓子さん(ミカタ)", location: "", result: "" },
+  { time: "19:00", name: "松井 華音さん(ミカタ)", location: "", result: "" },
+  { time: "20:00", name: "河内 知晃さん(ミカタ)", location: "", result: "" }
+];
+const PRESET_TOMORROW = [
+  { time: "10:00", name: "新藤優希さん(ミカタ)", location: "", concern: "" },
+  { time: "11:00", name: "Yuki Kaiさん(ミカタ)", location: "", concern: "" },
+  { time: "12:00", name: "浦田征也さん(ミカタ)", location: "", concern: "" },
+  { time: "13:00", name: "河田慶亮さん(ミカタ)", location: "", concern: "" }
+];
 const STORAGE_KEY = 'biz_report_' + DATE_STR;
 let state = { today: JSON.parse(JSON.stringify(PRESET_TODAY)), tomorrow: JSON.parse(JSON.stringify(PRESET_TOMORROW)), stats: {} };
 try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if(s) state = {...state, ...s}; } catch(e) {}
