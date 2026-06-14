@@ -103,11 +103,17 @@ h1{font-size:22px;margin:0 0 8px}
 
 <script>
 const GOAL = 17;
-const DATE_STR = "2026-06-13";
-const PRESET_TODAY = [];
+const DATE_STR = "2026-06-14";
+const PRESET_TODAY = [
+  { time: "11:00", name: "黒川 由華さん(ミカタ)", location: "", result: "" },
+  { time: "13:00", name: "木村 剛さん(ミカタ)", location: "", result: "" },
+  { time: "14:00", name: "田尻 智也さん(ミカタ)", location: "", result: "" }
+];
 const PRESET_TOMORROW = [
-  { time: "13:00", name: "木村 剛さん(ミカタ)", location: "", concern: "" },
-  { time: "14:00", name: "田尻 智也さん(ミカタ)", location: "", concern: "" }
+  { time: "10:00", name: "ヴォールカー 惠美さん(ミカタ)", location: "", concern: "" },
+  { time: "13:00", name: "土肥未来登さん(ミカタ)", location: "", concern: "" },
+  { time: "16:00", name: "泊 優斗さん(ミカタ)", location: "", concern: "" },
+  { time: "19:00", name: "大竹 正慶様", location: "", concern: "" }
 ];
 const STORAGE_KEY = 'biz_report_' + DATE_STR;
 let state = { today: JSON.parse(JSON.stringify(PRESET_TODAY)), tomorrow: JSON.parse(JSON.stringify(PRESET_TOMORROW)), stats: {} };
